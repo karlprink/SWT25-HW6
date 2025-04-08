@@ -2,6 +2,7 @@ import org.junit.Test;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.support.ui.ExpectedConditions;
+import org.openqa.selenium.support.ui.Select;
 import org.openqa.selenium.support.ui.WebDriverWait;
 
 import static junit.framework.TestCase.assertEquals;
@@ -9,7 +10,7 @@ import static junit.framework.TestCase.assertNotNull;
 import static org.junit.Assert.assertFalse;
 
 public class AdminTest extends TestHelper {
-    String username = "AdminTestUsername23";
+    String username = "AdminTestUsername30";
     String password = "AdminTestPassword1234";
 
 
@@ -65,7 +66,7 @@ public class AdminTest extends TestHelper {
         registerAccount(username, password);
         //login(username, password);
 
-        String title = "Test Product";
+        String title = "Test Product2";
         String description = "Test description";
         String type = "Sunglasses";
         double price = 29.99;
@@ -120,6 +121,7 @@ public class AdminTest extends TestHelper {
         new WebDriverWait(driver, 2).until(ExpectedConditions.elementToBeClickable(By.linkText("Admin"))).click();
         deleteLoggedInUser();
     }
+
     @Test
     public void AdminAddExistingProductTest() {
         registerAccount(username, password);
@@ -143,6 +145,52 @@ public class AdminTest extends TestHelper {
         driver.findElement(By.linkText("Back")).click();
 
         deleteProduct(title);
+        deleteLoggedInUser();
+    }
+
+    // BUG NR 2
+    @Test
+    public void AdminAddProductWithoutCategory() {
+        registerAccount(username, password);
+
+        driver.findElement(By.linkText("New product")).click();
+        driver.findElement(By.id("product_title")).sendKeys("test2");
+        driver.findElement(By.id("product_description")).sendKeys("test2");
+        driver.findElement(By.id("product_price")).sendKeys("29.99");
+
+        WebElement createButton = driver.findElement(By.xpath("//input[@value='Create Product']"));
+        createButton.click();
+
+        deleteProduct("test2");
+        deleteLoggedInUser();
+
+        WebElement errormessage = driver.findElement(By.id("error_explanation"));
+        assertNotNull(errormessage.getText());
+        System.out.println(errormessage.getText());
+        driver.findElement(By.linkText("Back")).click();
+    }
+
+    // Negative test
+    @Test
+    public void AdminAddProductWithIncorrectPrice() {
+        registerAccount(username, password);
+
+        driver.findElement(By.linkText("New product")).click();
+        driver.findElement(By.id("product_title")).sendKeys("test3");
+        driver.findElement(By.id("product_description")).sendKeys("test3");
+        WebElement prodType = driver.findElement(By.id("product_prod_type"));
+        Select select = new Select(prodType);
+        select.selectByVisibleText("Other");
+        driver.findElement(By.id("product_price")).sendKeys("a");
+
+        WebElement createButton = driver.findElement(By.xpath("//input[@value='Create Product']"));
+        createButton.click();
+
+        WebElement errormessage = driver.findElement(By.id("error_explanation"));
+        assertNotNull(errormessage.getText());
+        System.out.println(errormessage.getText());
+        driver.findElement(By.linkText("Back")).click();
+
         deleteLoggedInUser();
     }
 

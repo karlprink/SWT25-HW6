@@ -10,7 +10,7 @@ import static org.junit.Assert.assertEquals;
 
 public class EndUserTest extends TestHelper{
     public void setupProduct() {
-        registerAccount("admin3", "admin3");
+        registerAccount("admin4", "admin4");
 
         String title = "Test Product";
         String description = "Test description";
@@ -180,6 +180,7 @@ public class EndUserTest extends TestHelper{
         cleanUp();
     }
 
+    // BUG NR 1
     @Test
     public void onlyOtherTypesOfProducts() {
         setupProduct();
@@ -194,6 +195,33 @@ public class EndUserTest extends TestHelper{
         cleanUp();
     }
 
+    // Negative Test
+    @Test
+    public void testDecreaseProductQuantityToZero() {
+        setupProduct();
+        driver.get(baseUrl);
+
+        WebElement productDiv = driver.findElement(By.id("Test Product_entry"));
+        WebElement addToCartButton = productDiv.findElement(By.xpath(".//input[@value='Add to Cart']"));
+        addToCartButton.click();
+
+        WebElement cartRow = driver.findElement(By.id("current_item"));
+        WebElement decrease = cartRow.findElement(By.xpath("./td[4]"));
+        decrease.click();
+
+        cleanUp();
+    }
+
+    // Negative Test
+    @Test
+    public void testNonsensicalSearch() {
+        driver.get(baseUrl);
+
+        driver.findElement(By.id("search_input")).sendKeys("blabla");
+        WebElement productDiv = driver.findElement(By.id("Test Product_entry"));
+        assertEquals("", productDiv.getText());
+
+    }
 
 
 }
