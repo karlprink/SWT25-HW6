@@ -4,14 +4,12 @@ import org.openqa.selenium.WebElement;
 import org.openqa.selenium.support.ui.ExpectedConditions;
 import org.openqa.selenium.support.ui.WebDriverWait;
 
-import java.time.Duration;
-
 import static junit.framework.TestCase.assertEquals;
 import static junit.framework.TestCase.assertNotNull;
 import static org.junit.Assert.assertFalse;
 
 public class AdminTest extends TestHelper {
-    String username = "AdminTestUsername15";
+    String username = "AdminTestUsername23";
     String password = "AdminTestPassword1234";
 
 
@@ -122,4 +120,31 @@ public class AdminTest extends TestHelper {
         new WebDriverWait(driver, 2).until(ExpectedConditions.elementToBeClickable(By.linkText("Admin"))).click();
         deleteLoggedInUser();
     }
+    @Test
+    public void AdminAddExistingProductTest() {
+        registerAccount(username, password);
+        String title = "Existing Product";
+        String description = "Test description";
+        String type = "Sunglasses";
+        double price = 29.99;
+
+
+        driver.findElement(By.linkText("New product")).click();
+        addProductToStore(title, description, type, price);
+
+
+        driver.findElement(By.linkText("New product")).click();
+        addProductToStore(title, description, type, price);
+
+
+        WebElement errormessage = driver.findElement(By.id("error_explanation"));
+        assertNotNull(errormessage.getText());
+        System.out.println(errormessage.getText());
+        driver.findElement(By.linkText("Back")).click();
+
+        deleteProduct(title);
+        deleteLoggedInUser();
+    }
+
+
 }
