@@ -26,15 +26,16 @@ public class EndUserTest extends TestHelper{
 
     @Test
     public void addProductsToCart() {
-
+        setupProduct();
         driver.get(baseUrl);
 
-        WebElement product = driver.findElement(By.linkText("B45593 Sunglasses"));
+        WebElement product = driver.findElement(By.linkText("Test Product"));
         product.findElement(By.xpath("//input[@value='Add to Cart']")).click();
 
         WebElement productNameElement = driver.findElement(By.xpath("//tr[@id='current_item']//td[2]"));
-        assertEquals("B45593 Sunglasses", productNameElement.getText());
+        assertEquals("Test Product", productNameElement.getText());
 
+        cleanUp();
     }
 
     @Test
