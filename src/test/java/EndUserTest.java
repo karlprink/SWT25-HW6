@@ -1,6 +1,11 @@
+import junit.framework.TestCase;
 import org.junit.Test;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebElement;
+import org.openqa.selenium.support.ui.Select;
+
+import java.util.List;
+
 import static org.junit.Assert.assertEquals;
 
 public class EndUserTest extends TestHelper{
@@ -29,32 +34,164 @@ public class EndUserTest extends TestHelper{
         setupProduct();
         driver.get(baseUrl);
 
-        WebElement product = driver.findElement(By.linkText("Test Product"));
-        product.findElement(By.xpath("//input[@value='Add to Cart']")).click();
+        WebElement productDiv = driver.findElement(By.id("Test Product_entry"));
+        WebElement addToCartButton = productDiv.findElement(By.xpath(".//input[@value='Add to Cart']"));
+        addToCartButton.click();
 
-        WebElement productNameElement = driver.findElement(By.xpath("//tr[@id='current_item']//td[2]"));
-        assertEquals("Test Product", productNameElement.getText());
+        WebElement cartRow = driver.findElement(By.id("current_item"));
+        WebElement name = cartRow.findElement(By.xpath("./td[2]"));
+        assertEquals("Test Product", name.getText());
 
         cleanUp();
     }
 
     @Test
     public void increaseProductQuantity() {
+        setupProduct();
         driver.get(baseUrl);
 
-        /* EI TÖÖTA
-        WebElement product = driver.findElement(By.linkText("B45593 Sunglasses"));
-        product.findElement(By.xpath("//input[@value='Add to Cart']")).click();
-        WebElement increaseQuantityButton = driver.findElement(By.xpath("//tr[@class='cart_row']//a[@href='/line_items/10/increase']"));
-        increaseQuantityButton.click();
-        WebDriverWait wait = new WebDriverWait(driver, 4);
-        WebElement quantityElement = wait.until(ExpectedConditions.visibilityOfElementLocated(By.xpath("//tr[@class='cart_row']//td[@class='quantity']")));
+        WebElement productDiv = driver.findElement(By.id("Test Product_entry"));
+        WebElement addToCartButton = productDiv.findElement(By.xpath(".//input[@value='Add to Cart']"));
+        addToCartButton.click();
 
-        String quantityText = quantityElement.getText();
+        WebElement cartRow = driver.findElement(By.id("current_item"));
+        WebElement increase = cartRow.findElement(By.xpath("./td[5]"));
+        increase.click();
 
-        assertTrue("Quantity was not increased", quantityText.contains("2×"));
+        cartRow = driver.findElement(By.id("current_item"));
+        WebElement quantity = cartRow.findElement(By.xpath("./td[1]"));
+        assertEquals("2×", quantity.getText());
 
-         */
+        cleanUp();
+    }
+
+    @Test
+    public void decreaseProductQuantity() {
+        setupProduct();
+        driver.get(baseUrl);
+
+        WebElement productDiv = driver.findElement(By.id("Test Product_entry"));
+        WebElement addToCartButton = productDiv.findElement(By.xpath(".//input[@value='Add to Cart']"));
+        addToCartButton.click();
+
+        WebElement cartRow = driver.findElement(By.id("current_item"));
+        WebElement increase = cartRow.findElement(By.xpath("./td[5]"));
+        increase.click();
+
+        cartRow = driver.findElement(By.id("current_item"));
+        WebElement decrease = cartRow.findElement(By.xpath("./td[4]"));
+        decrease.click();
+
+        cartRow = driver.findElement(By.id("current_item"));
+        WebElement quantity = cartRow.findElement(By.xpath("./td[1]"));
+        assertEquals("1×", quantity.getText());
+
+        cleanUp();
+    }
+
+    @Test
+    public void deleteOneProduct() {
+        setupProduct();
+        driver.get(baseUrl);
+
+        WebElement productDiv = driver.findElement(By.id("Test Product_entry"));
+        WebElement addToCartButton = productDiv.findElement(By.xpath(".//input[@value='Add to Cart']"));
+        addToCartButton.click();
+
+        WebElement cartRow = driver.findElement(By.id("current_item"));
+        WebElement deleteButton = cartRow.findElement(By.xpath("./td[6]"));
+        deleteButton.click();
+
+        WebElement notice = driver.findElement(By.id("notice"));
+        TestCase.assertEquals("Item successfully deleted from cart.", notice.getText());
+
+        cleanUp();
+    }
+
+    @Test
+    public void deleteEntireCart() {
+        setupProduct();
+        driver.get(baseUrl);
+
+        WebElement productDiv = driver.findElement(By.id("Test Product_entry"));
+        WebElement addToCartButton = productDiv.findElement(By.xpath(".//input[@value='Add to Cart']"));
+        addToCartButton.click();
+
+        WebElement deleteButton = driver.findElement(By.xpath("//input[@value='Empty cart']"));
+        deleteButton.click();
+
+        WebElement notice = driver.findElement(By.id("notice"));
+        TestCase.assertEquals("Cart successfully deleted.", notice.getText());
+
+        cleanUp();
+    }
+
+    @Test
+    public void searchProduct() {
+        setupProduct();
+        driver.get(baseUrl);
+
+        driver.findElement(By.id("search_input")).sendKeys("Test Product");
+        waitForElementById("Test Product_entry");
+        WebElement productDiv = driver.findElement(By.linkText("Test Product"));
+        assertEquals("Test Product", productDiv.getText());
+
+        cleanUp();
+    }
+
+    @Test
+    public void filterProducts() {
+        setupProduct();
+        driver.get(baseUrl);
+
+        driver.findElement(By.linkText("Other")).click();
+        waitForElementById("Test Product_entry");
+        WebElement productDiv = driver.findElement(By.linkText("Test Product"));
+        assertEquals("Test Product", productDiv.getText());
+
+        cleanUp();
+    }
+
+    @Test
+    public void purchaseItems() {
+        setupProduct();
+        driver.get(baseUrl);
+
+        WebElement productDiv = driver.findElement(By.id("Test Product_entry"));
+        WebElement addToCartButton = productDiv.findElement(By.xpath(".//input[@value='Add to Cart']"));
+        addToCartButton.click();
+
+        WebElement checkoutButton = driver.findElement(By.xpath("//input[@value='Checkout']"));
+        checkoutButton.click();
+
+        driver.findElement(By.id("order_name")).sendKeys("user");
+        driver.findElement(By.id("order_address")).sendKeys("userAddress");
+        driver.findElement(By.id("order_email")).sendKeys("userEmail");
+        WebElement paymentDropdown = driver.findElement(By.id("order_pay_type"));
+        Select select = new Select(paymentDropdown);
+        select.selectByVisibleText("Credit card");
+
+        WebElement placeOrderButton = driver.findElement(By.xpath("//input[@value='Place Order']"));
+        placeOrderButton.click();
+
+        WebElement receipt = driver.findElement(By.id("order_receipt"));
+        assertEquals("Thank you for your order\nName: user\nAddress: userAddress\nEmail: userEmail\nPay type: Credit card\n1× Test Product €29.99\nTotal: €29.99", receipt.getText());
+
+        cleanUp();
+    }
+
+    @Test
+    public void onlyOtherTypesOfProducts() {
+        setupProduct();
+        driver.get(baseUrl);
+
+        driver.findElement(By.linkText("Other")).click();
+        List<WebElement> cateories = driver.findElements(By.id("category"));
+        for (WebElement cateory : cateories) {
+            assertEquals("Other", cateory.getText());
+        }
+
+        cleanUp();
     }
 
 
